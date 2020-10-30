@@ -1,34 +1,101 @@
 body {
+    width: 100%;
     background-color: antiquewhite;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-.singleBorad {
-    width: 40px;
-    height: 40px;
-    background-color: burlywood;
-    display: inline-block;
-    border: 1px solid #ffffff;
-    vertical-align: bottom;
+
+
+.title {
+    font-size: 30px;
 }
 
-.piece {
-    width: 35px;
-    height: 35px;
-    margin-top: 2.5px;
-    margin-left: 2.5px;
-    border-radius: 20px;
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    background-color: bisque;
 }
+
+#root {
+    /* background-color: aquamarine; */
+    width: 70%;
+    padding-bottom: 70%;
+    height: 0px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.singleBorad{
+    width: 5.7%;
+    padding-bottom: 5.7%;
+    height: 0;
+    overflow: hidden;
+    background-color: burlywood;
+    border: 0.1px solid #ffffff;
+    vertical-align: bottom;
+    cursor: pointer;
+    position: relative;
+}
+.piece {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    border-radius: 100%;
+    
+
+    /* height: 30px; */
+    /* margin-top: 2.5px;
+    margin-left: 2.5px; */
+    /* border-radius: 100%; */
+}
+
 .blackPiece {
     background-color: #000000;
 }
+
 .whitePiece {
     background-color: #ffffff;
 }
 
-#clearButton{
+.side {
+    width: 200px;
+    height: 300px;
+    /* background-color: aquamarine; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+.side>div {
+    margin-top: 30px;
+    font-size: 20px;
+    transition: all linear 0.3s;
+    color: #666666;
+}
+
+.side>.active {
+    font-size: 35px;
+    color: #000000;
+
+
+}
+
+#clearButton {
     width: 100px;
     height: 30px;
+    cursor: pointer;
+}
+
+
+button {
     cursor: pointer;
 }
