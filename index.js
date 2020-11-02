@@ -8,9 +8,9 @@ let board = new Array(allCell).fill(0)
 
 /**
  * 棋盘状态
- * 0 -> 准备开始
- * 1 -> 开始
- * 2 -> white win
+ * 0 -> 准备开始 
+ * 1 -> 开始 
+ * 2-> white win  
  * 3 -> black win
  */
 let boardState = 0
@@ -35,56 +35,153 @@ let lastWhiteCoordinate = null;
 function init() {
     board = new Array(allCell).fill(0)
     color = 2;
-    boardState = 0
+    boardState = 1
     lastBlackCoordinate = null;
     lastWhiteCoordinate = null;
     pieceActive();
-    render()
 }
+
+/**
+ *  悔棋功能
+ *  悔棋按钮添加css样式 disabled
+ *  color == 1 黑色悔棋按钮 disabled
+ *  color == 2 白色悔棋按钮 disabled
+ *  为悔棋按钮添加事件
+ */
+let blackUndo = document.getElementById('blackUndo');
+let whiteUndo = document.getElementById('whiteUndo');
+
+function changeUndoBottomDisabled() {
+    if (!lastWhiteCoordinate || color === 2) {
+        whiteUndo.disabled = 'true'
+    } else {
+        whiteUndo.disabled = ''
+    }
+    if (!lastBlackCoordinate || color === 1) {
+        blackUndo.disabled = 'true'
+    } else {
+        blackUndo.disabled = ''
+    }
+}
+blackUndo.addEventListener('click', function () {
+    let x = lastBlackCoordinate[0];
+    let y = lastBlackCoordinate[1];
+    let location = x + y * xLen;
+    for (let i = 0; i < allCell; i++) {
+        if (i === location) {
+            board[i] = 0
+        }
+    }
+    color = 1
+    pieceActive(2)
+    render()
+    lastBlackCoordinate = null
+    changeUndoBottomDisabled()
+
+})
+whiteUndo.addEventListener('click', function () {
+    let x = lastWhiteCoordinate[0];
+    let y = lastWhiteCoordinate[1];
+    let location = x + y * xLen;
+    for (let i = 0; i < allCell; i++) {
+        if (i === location) {
+            board[i] = 0
+        }
+    }
+    color = 2
+    pieceActive(1)
+    render()
+    lastWhiteCoordinate = null
+    changeUndoBottomDisabled()
+})
+
+
+/** 
+ *  投降按钮
+ */
+let whiteQuit = document.getElementById('whiteQuit');
+let blackQuit = document.getElementById('blackQuit');
+whiteQuit.addEventListener('click', function () {
+    boardState = 3
+    render()
+});
+blackQuit.addEventListener('click', function () {
+    boardState = 2
+    render()
+})
+
+/**
+ *  修改出棋提示css
+ *  color == 1 黑棋active
+ *  color == 2 白棋active
+ */
+function pieceActive() {
+    if (color === 2) {
+        document.getElementsByClassName('whiteSide')[0].className = 'whiteSide active'
+        document.getElementsByClassName('blackSide')[0].className = 'blackSide'
+    } else if (color === 1) {
+        document.getElementsByClassName('whiteSide')[0].className = 'whiteSide'
+        document.getElementsByClassName('blackSide')[0].className = 'blackSide active'
+    }
+    if (boardState !== 1) {
+        document.getElementsByClassName('whiteSide')[0].className = 'whiteSide'
+        document.getElementsByClassName('blackSide')[0].className = 'blackSide'
+    }
+}
+
 /**
  * 获取棋盘容器
  */
 let container = document.getElementById('root');
 
-
-
-render()
-
+/**
+ * 渲染
+ */
 function render() {
     container.innerHTML = '';
-    switch (boardState) {
-        case 0:
-            ready()
-            break
-        case 1:
-            playing()
-            break
-        case 2:
-            whiteWin()
-            break
-        case 3:
-            blackWin()
-            break
+    changeUndoBottomDisabled();
+    pieceActive();
+    if (boardState === 1) {
+        playing()
+    } else {
+        ready()
     }
+
 }
 /**
  * 游戏准备阶段
  */
 function ready() {
+    // 白板
+    let subScreen = document.createElement('div');
+    subScreen.id = 'subScreen';
+    container.appendChild(subScreen);
+
     let ele = document.createElement('div');
-    ele.className = 'ready';
+    ele.className = 'subScreenContainer';
+
+    let eleWord = document.createElement('div');
+    if (boardState === 2) {
+        eleWord.innerText = 'white win';
+    } else if (boardState === 3) {
+        eleWord.innerText = 'black win';
+    }
+    ele.appendChild(eleWord)
+
     let readyBotton = document.createElement('button');
     readyBotton.addEventListener('click', function () {
-        init()
-        boardState = 1;
-        render()
+        init();
+        render();
     })
     readyBotton.innerText = '开始'
     ele.appendChild(readyBotton)
     container.appendChild(ele);
+    changeUndoBottomDisabled()
+    playing()
 }
 /**
  * 游戏进行
+ * 游戏规则
  */
 function playing() {
     for (let i = 0; i < allCell; i++) {
@@ -124,21 +221,9 @@ function playing() {
 }
 
 /**
- * 白棋胜利渲染
+ * 胜利条件
+ * 八个方向五子相连
  */
-function whiteWin() {
-    container.innerHTML = '<div>white win</div>'
-    init()
-}
-
-/**
- * 黑棋胜利渲染
- */
-function blackWin() {
-    container.innerHTML = '<div>black win</div>'
-    init()
-}
-
 function isWin(coordinate, color) {
     let count = 0;
     let x = ox = coordinate[0];
@@ -153,12 +238,13 @@ function isWin(coordinate, color) {
     let win = () => {
         if (color === 1) {
             boardState = 3;
-            init()
         } else if (color === 2) {
             boardState = 2;
-            init()
         }
-        render()
+        pieceActive()
+        lastBlackCoordinate = null;
+        lastWhiteCoordinate = null;
+        ready()
     }
     // 向左
     while (x >= 0) {
@@ -295,89 +381,10 @@ function isWin(coordinate, color) {
     }
 }
 
-// 该谁走
-function pieceActive(color) {
-    if (boardState === 0) {
-        document.getElementsByClassName('whiteSide')[0].className = 'whiteSide'
-        document.getElementsByClassName('blackSide')[0].className = 'blackSide'
-    } else {
-        switch (color) {
-            case 1:
-                document.getElementsByClassName('whiteSide')[0].className = 'whiteSide active'
-                document.getElementsByClassName('blackSide')[0].className = 'blackSide'
-                break
-            case 2:
-                document.getElementsByClassName('whiteSide')[0].className = 'whiteSide'
-                document.getElementsByClassName('blackSide')[0].className = 'blackSide active'
-                break
-        }
-    }
-
-}
-
-/**
- *  悔棋功能
- *  悔棋按钮disabled
- */
-let blackUndo = document.getElementById('blackUndo');
-let whiteUndo = document.getElementById('whiteUndo');
-changeUndoBottomDisabled()
-
-function changeUndoBottomDisabled() {
-    if (!lastWhiteCoordinate || color === 1) {
-        whiteUndo.disabled = 'true'
-    } else {
-        whiteUndo.disabled = ''
-    }
-    if (!lastBlackCoordinate || color === 2) {
-        blackUndo.disabled = 'true'
-    } else {
-        blackUndo.disabled = ''
-    }
-}
-blackUndo.addEventListener('click', function () {
-    let x = lastBlackCoordinate[0];
-    let y = lastBlackCoordinate[1];
-    let location = x + y * xLen;
-    for (let i = 0; i < allCell; i++) {
-        if (i === location) {
-            board[i] = 0
-        }
-    }
-    color = 1
-    pieceActive(2)
-    render()
-    lastBlackCoordinate = null
-    changeUndoBottomDisabled()
-
-})
-whiteUndo.addEventListener('click', function () {
-    let x = lastWhiteCoordinate[0];
-    let y = lastWhiteCoordinate[1];
-    let location = x + y * xLen;
-    for (let i = 0; i < allCell; i++) {
-        if (i === location) {
-            board[i] = 0
-        }
-    }
-    color = 2
-    pieceActive(1)
-    render()
-    lastWhiteCoordinate = null
-    changeUndoBottomDisabled()
-})
+render()
 
 
-/** 
- *  投降按钮
-*/
-let whiteQuit = document.getElementById('whiteQuit');
-let blackQuit = document.getElementById('blackQuit');
-whiteQuit.addEventListener('click', function () {
-    boardState = 3
-    render()
-});
-blackQuit.addEventListener('click', function () {
-    boardState = 2
-    render()
-})
+
+
+
+
